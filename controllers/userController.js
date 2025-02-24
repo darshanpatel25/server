@@ -77,10 +77,11 @@ exports.loginUserController = async (req, res) => {
       { _id: existingUser._id },
       process.env.JWT_SECRET,
       {
-        expiresIn: "2d",
+        expiresIn: "20d",
       }
     );
 
+    
     res.status(200).json({
       success: true,
       message: "User Login Successful",

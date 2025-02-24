@@ -4,10 +4,12 @@ const userRoutes = require("./routes/userRoutes")
 const dotenv = require("dotenv").config({ path: "./.env" });
 const app = express()
 const bodyParser = require('body-parser');
+const cors = require('cors');
 
 
 app.use(bodyParser.json());
 
+app.use(cors()); 
 
 //database connectivity
 connectDB()
