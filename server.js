@@ -1,7 +1,12 @@
 const express = require('express');
 const connectDB = require('./config/db');
+const userRoutes = require("./routes/userRoutes")
 const dotenv = require("dotenv").config({ path: "./.env" });
 const app = express()
+const bodyParser = require('body-parser');
+
+
+app.use(bodyParser.json());
 
 
 //database connectivity
@@ -14,6 +19,9 @@ app.get("/", (req, res) => {
     });
   });
 
+
+//user route
+app.use("/api/v1/user", userRoutes);
 
 
 //listening server

@@ -24,13 +24,12 @@ const userSchmea = new mongoose.Schema({
             ref: "team"
         }
     ],
-    contact: {
-        type: String,
-        required: true
-    },
-    otp: {
-        type: Number,
-        required: true
+   
+   
+    isVerified:{
+        type:Boolean,
+        required:true,
+        default:true
     }
 })
 
