@@ -4,6 +4,8 @@ const sendOTPEmail = require('../utils/otpMail')
 const { hashPassword, comparePassword } = require('../helpers/authHelper')
 const JWT = require('jsonwebtoken')
 
+// register
+
 exports.registerUserController = async (req, res) => {
     try {
         //otp
@@ -51,6 +53,8 @@ exports.registerUserController = async (req, res) => {
     }
 }
 
+//login
+
 exports.loginUserController = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -73,7 +77,7 @@ exports.loginUserController = async (req, res) => {
 
     // JWT generation
     const token = await JWT.sign(
-      { _id: existingUser._id, role: existingUser.role }, // Include role
+      { _id: existingUser._id, access: existingUser.access }, 
       process.env.JWT_SECRET,
       {
         expiresIn: "20d",
@@ -83,7 +87,7 @@ exports.loginUserController = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "User Login Successful",
-      user: { _id: existingUser._id, name: existingUser.name, role: existingUser.role }, // Include user data
+      user: { _id: existingUser._id, name: existingUser.name, access: existingUser.access }, 
       token,
     });
   } catch (error) {
@@ -107,3 +111,38 @@ exports.testController = (req, res) => {
 exports.userController = (req, res) => {
   res.status(200).json({ success: true });
 };
+
+//update user
+
+exports.updateUserController = async(req,res)=>{
+  try {
+
+    const { name, password, } = req.body;
+    const user = userModel.findById(req.user._id);
+    console.log(req.user._id);
+
+    const hashedPassword = password ? await hashPassword(password) : undefined;
+
+    const updatedUser = await userModel.findByIdAndUpdate(
+      req.user._id,
+      {
+        name: name || user.name,
+        password: hashedPassword || user.password,
+        
+      },
+      { new: true }
+    );
+    res.status(200).json({
+      success: true,
+      message: "User Updated Successfully",
+      updatedUser,
+    });
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      success:false,
+      message:"Internal Server Error"
+    })
+  }
+}
