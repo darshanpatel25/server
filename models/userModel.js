@@ -18,10 +18,10 @@ const userSchmea = new mongoose.Schema({
         required: true,
         default: 0
     },
-    team: [
+    teams: [
         {
-            type: mongoose.Schema.ObjectId,
-            ref: "team"
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Team"
         }
     ],
    
@@ -33,4 +33,4 @@ const userSchmea = new mongoose.Schema({
     }
 })
 
-module.exports = mongoose.model("user",userSchmea)
+module.exports = mongoose.model("User",userSchmea)
