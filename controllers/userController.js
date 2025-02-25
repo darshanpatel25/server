@@ -224,3 +224,21 @@ exports.assignTeamToUserController = async (req, res) => {
   }
 };
 
+//get all users
+
+exports.getAllUsersController = async(req,res)=>{
+  try {
+    const users =await userModel.find()
+    res.status(200).json({
+      success:true,
+      users
+    })
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      success:false,
+      message:"Internal Server Error"
+    })
+  }
+}
+

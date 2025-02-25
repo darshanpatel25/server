@@ -1,5 +1,6 @@
 const Team = require('../models/teamModel');
-const Permission = require('../models/permissionModel')
+const Permission = require('../models/permissionModel');
+const teamModel = require('../models/teamModel');
 
 exports.createTeamController = async (req, res) => {
     try {
@@ -58,3 +59,57 @@ exports.createTeamController = async (req, res) => {
         });
     }
 };
+
+//update team controller
+
+exports.updateTeamController = async (req, res) => {
+    try {
+        const { name, permissions } = req.body;
+        const teamId  = req.params.id;
+
+        const team = await Team.findById(teamId);
+        if (!team) {
+            return res.status(404).json({
+                success: false,
+                message: "Team not found"
+            });
+        }
+
+        
+        const updatedTeam = await Team.findByIdAndUpdate(
+            teamId,
+            {
+                name: name || team.name,
+                permissions: permissions || team.permissions
+            },
+            { new: true }
+        );
+
+        res.status(200).json({
+            success: true,
+            message: "Team Updated Successfully",
+            updatedTeam
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+    }
+};
+
+//delete team controller 
+
+exports.deleteTeamController=async(req,res)=>{
+    try {
+        
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({
+            success:false,
+            message:"Internal Server Error"
+        })
+    }
+}

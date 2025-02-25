@@ -2,7 +2,7 @@ const JWT = require("jsonwebtoken");
 const userModel = require("../models/userModel");
 
 
-// PROTECTED ROUTE TOKEN BASED
+// check login
 
 exports.requireSignIn = async (req, res, next) => {
   try {
@@ -17,7 +17,7 @@ exports.requireSignIn = async (req, res, next) => {
   }
 };
 
-// ADMIN ACCESS
+// check admin
 
 exports.isAdmin = async (req, res, next) => {
   try {
@@ -35,43 +35,50 @@ exports.isAdmin = async (req, res, next) => {
   }
 };
 
-//check permission 
+//check permissions if admin the directly bypass and if simple user  
 
 exports.checkPermission = (requiredPermission) => {
   return async (req, res, next) => {
-      try {
-          const userId = req.headers.id; 
-          console.log(userId)
-        
-          const user = await userModel.findById(userId).populate({
-              path: 'teams',
-              populate: {
-                  path: 'permissions', 
-                  model: 'Permission'
-              }
-          });
+    try {
+      const userId = req.headers.id;
+      console.log(userId)
 
-          if (!user) {
-              return res.status(404).json({success:false, message: 'User not found' });
-          }
+      const user = await userModel.findById(userId).populate({
+        path: 'teams',
+        populate: {
+          path: 'permissions',
+          model: 'Permission'
+        }
+      });
 
-        
-          const userPermissions = new Set();
-          user.teams.forEach(team => {
-              team.permissions.forEach(permission => {
-                  userPermissions.add(permission.name);
-              });
-          });
-          console.log(userPermissions)
-
-          // block if not permited
-          if (!userPermissions.has(requiredPermission)) {
-              return res.status(403).json({success:false, message: 'Access denied' });
-          }
-
-          next(); // access allowed
-      } catch (error) {
-          res.status(500).json({ success:false,message: 'Internal server error in middleware'});
+      if (!user) {
+        return res.status(404).json({ success: false, message: 'User not found' });
       }
+
+      if (user.access === 1) {
+        next()
+      }
+      else {
+
+        const userPermissions = new Set();
+        user.teams.forEach(team => {
+          team.permissions.forEach(permission => {
+            userPermissions.add(permission.name);
+          });
+        });
+        console.log(userPermissions)
+
+        // block if not permited
+        if (!userPermissions.has(requiredPermission)) {
+          return res.status(403).json({ success: false, message: 'Access denied' });
+        }
+
+        next(); // access allowed
+      }
+
+
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Internal server error in middleware' });
+    }
   };
 };

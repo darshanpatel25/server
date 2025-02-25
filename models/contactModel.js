@@ -19,6 +19,12 @@ const contactSchema = new mongoose.Schema({
     },
     birthday:{
         type:Date
+    },
+    nickname:{
+        type:String
+    },
+    address:{
+        type:String
     }
 })
 

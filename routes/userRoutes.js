@@ -1,5 +1,5 @@
 const express = require("express");
-const { registerUserController, loginUserController, testController, userController, updateUserController, deleteUserController, assignTeamToUserController } = require("../controllers/userController");
+const { registerUserController, loginUserController, testController, userController, updateUserController, deleteUserController, assignTeamToUserController, getAllUsersController } = require("../controllers/userController");
 const { requireSignIn, isAdmin, checkPermission } = require("../middlewares/authMiddleware");
 
 const router = express.Router()
@@ -29,6 +29,10 @@ router.delete("/delete-user/:id",requireSignIn,isAdmin,deleteUserController)
 // POST || Assign team to user
 
 router.post("/assign-team",assignTeamToUserController)
+
+//GET || Get All Users
+
+router.get("/getusers",getAllUsersController)
 
 
 module.exports = router

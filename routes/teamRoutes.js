@@ -1,11 +1,19 @@
 const express = require('express')
-const { createTeamController } = require('../controllers/teamController')
+const { createTeamController, updateTeamController } = require('../controllers/teamController')
 
 const router = express.Router()
 
-//team Creation || POST
+//POST || team Creation 
 
 router.post("/create",createTeamController)
+
+//PUT || Team Update
+
+router.put('/update/:id',updateTeamController)
+
+//DELETE || Delete Team
+
+router.delete('/delete/:id')
 
 
 
