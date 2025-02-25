@@ -1,6 +1,7 @@
 const express = require('express');
 const connectDB = require('./config/db');
 const userRoutes = require("./routes/userRoutes")
+const teamRoutes = require("./routes/teamRoutes")
 const dotenv = require("dotenv").config({ path: "./.env" });
 const app = express()
 const bodyParser = require('body-parser');
@@ -25,6 +26,9 @@ app.get("/", (req, res) => {
 
 //user route
 app.use("/api/v1/user", userRoutes);
+
+//team route
+app.use("/api/v1/team",teamRoutes)
 
 
 //listening server

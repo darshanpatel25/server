@@ -1,4 +1,4 @@
-import mongoose, { mongo } from "mongoose";
+const mongoose = require('mongoose')
 
 const contactSchema = new mongoose.Schema({
     name:{

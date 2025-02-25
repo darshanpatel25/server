@@ -3,6 +3,7 @@ const userModel = require('../models/userModel')
 const sendOTPEmail = require('../utils/otpMail')
 const { hashPassword, comparePassword } = require('../helpers/authHelper')
 const JWT = require('jsonwebtoken')
+const Team = require("../models/teamModel");
 
 // register
 
@@ -146,3 +147,80 @@ exports.updateUserController = async(req,res)=>{
     })
   }
 }
+
+//delete user controller
+
+exports.deleteUserController = async(req,res)=>{
+  try {
+
+    const userId = req.params.id
+
+    const user =await userModel.findByIdAndDelete(userId)
+
+    res.status(200).json({
+      success:true,
+      message:"User Deleted Successfully"
+
+    })
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      success:false,
+      message:"Internal Server Error"
+    })
+  }
+}
+
+//assigning team to user
+
+
+
+
+exports.assignTeamToUserController = async (req, res) => {
+  try {
+    const { userId, teamId } = req.body;
+
+    // Validate user and team existence
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const team = await Team.findById(teamId);
+    if (!team) {
+      return res.status(404).json({
+        success: false,
+        message: "Team not found",
+      });
+    }
+
+    // Check if user is already assigned to the team
+    if (user.teams.includes(teamId)) {
+      return res.status(400).json({
+        success: false,
+        message: "User is already assigned to this team",
+      });
+    }
+
+    // Assign team to user
+    user.teams.push(teamId);
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Team assigned to user successfully",
+      user,
+    });
+  } catch (error) {
+    console.error("Error assigning team to user:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+

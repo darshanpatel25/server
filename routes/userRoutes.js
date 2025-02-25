@@ -1,6 +1,6 @@
 const express = require("express");
-const { registerUserController, loginUserController, testController, userController, updateUserController } = require("../controllers/userController");
-const { requireSignIn, isAdmin } = require("../middlewares/authMiddleware");
+const { registerUserController, loginUserController, testController, userController, updateUserController, deleteUserController, assignTeamToUserController } = require("../controllers/userController");
+const { requireSignIn, isAdmin, checkPermission } = require("../middlewares/authMiddleware");
 
 const router = express.Router()
 
@@ -18,9 +18,17 @@ router.get("/admin-test", requireSignIn, isAdmin, testController);
 
 router.get("/user-test", requireSignIn, userController);
 
-//POST || update user
+//PUT || update user
 
-router.put("/update-user/:id",requireSignIn,updateUserController)
+router.put("/update-user/:id",requireSignIn,checkPermission("create_user"),updateUserController)
+
+//DELETE || Delete User
+
+router.delete("/delete-user/:id",requireSignIn,isAdmin,deleteUserController)
+
+// POST || Assign team to user
+
+router.post("/assign-team",assignTeamToUserController)
 
 
 module.exports = router
