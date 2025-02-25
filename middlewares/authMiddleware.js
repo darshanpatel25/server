@@ -1,5 +1,5 @@
 const JWT = require("jsonwebtoken");
-const userModel = require("../model/userModel");
+const userModel = require("../models/userModel");
 
 
 // PROTECTED ROUTE TOKEN BASED
@@ -22,7 +22,7 @@ exports.requireSignIn = async (req, res, next) => {
 exports.isAdmin = async (req, res, next) => {
   try {
     const user = await userModel.findById(req.user._id);
-    if (user.role !== "admin") {
+    if (user.access !== 1) {
       return res
         .status(200)
         .json({ success: false, message: "Admin Access denied" });

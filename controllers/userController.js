@@ -52,9 +52,9 @@ exports.registerUserController = async (req, res) => {
 }
 
 exports.loginUserController = async (req, res) => {
-    try {
-        const {email,password}= req.body
-        const existingUser = await userModel.findOne({ email });
+  try {
+    const { email, password } = req.body;
+    const existingUser = await userModel.findOne({ email });
 
     if (!existingUser) {
       return res.status(200).json({
@@ -71,29 +71,39 @@ exports.loginUserController = async (req, res) => {
       });
     }
 
-    //JWT generation
-
+    // JWT generation
     const token = await JWT.sign(
-      { _id: existingUser._id },
+      { _id: existingUser._id, role: existingUser.role }, // Include role
       process.env.JWT_SECRET,
       {
         expiresIn: "20d",
       }
     );
 
-    
     res.status(200).json({
       success: true,
       message: "User Login Successful",
+      user: { _id: existingUser._id, name: existingUser.name, role: existingUser.role }, // Include user data
       token,
     });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
 
 
-    } catch (error) {
-        console.log(error)
-        res.status(500).json({
-            success: false,
-            message: "Internal Server Error"
-        })
-    }
-}
+//admin check
+
+exports.testController = (req, res) => {
+  res.status(200).json({ success: true });
+};
+
+//signin check
+
+exports.userController = (req, res) => {
+  res.status(200).json({ success: true });
+};

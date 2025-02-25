@@ -9,7 +9,8 @@ const cors = require('cors');
 
 app.use(bodyParser.json());
 
-app.use(cors()); 
+app.use(cors({ origin: "*", credentials: true }));
+
 
 //database connectivity
 connectDB()
