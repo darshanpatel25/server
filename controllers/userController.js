@@ -16,6 +16,20 @@ exports.registerUserController = async (req, res) => {
         //data from body
         const { name, password, email } = req.body
 
+        let emailFormat = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if(email==='' || !email.match(emailFormat)){
+          return res.status(200).json({
+            success:false,
+            message:"Enter Valid Email"
+          })
+        }
+        if(password.length!=8){
+          return res.status(200).json({
+            success:false,
+            message:"Password should be greater than 8 characters"
+          })
+        }
+
 
         //findind duplicacy
 
@@ -228,7 +242,12 @@ exports.assignTeamToUserController = async (req, res) => {
 
 exports.getAllUsersController = async(req,res)=>{
   try {
-    const users =await userModel.find()
+    const users =await userModel.find().populate({
+      path: 'teams',
+       model:'Team'
+    })
+    // const users = await userModel.find()
+    
     res.status(200).json({
       success:true,
       users

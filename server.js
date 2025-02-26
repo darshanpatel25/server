@@ -2,6 +2,8 @@ const express = require('express');
 const connectDB = require('./config/db');
 const userRoutes = require("./routes/userRoutes")
 const teamRoutes = require("./routes/teamRoutes")
+const permissionRoutes = require("./routes/permissionRoutes")
+const contactRoutes = require("./routes/contactRoutes")
 const dotenv = require("dotenv").config({ path: "./.env" });
 const app = express()
 const bodyParser = require('body-parser');
@@ -29,6 +31,12 @@ app.use("/api/v1/user", userRoutes);
 
 //team route
 app.use("/api/v1/team",teamRoutes)
+
+//permission route
+app.use("/api/v1/permission",permissionRoutes)
+
+//contact route
+app.use("/api/v1/contact",contactRoutes)
 
 
 //listening server

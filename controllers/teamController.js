@@ -6,7 +6,7 @@ exports.createTeamController = async (req, res) => {
     try {
         const { name, permissions } = req.body;
 
-        // Validate request body
+        
         if (!name || !permissions || !Array.isArray(permissions)) {
             return res.status(400).json({
                 success: false,
@@ -14,7 +14,7 @@ exports.createTeamController = async (req, res) => {
             });
         }
 
-        // Check if team name already exists
+        
         const existingTeam = await Team.findOne({ name });
         if (existingTeam) {
             return res.status(400).json({
@@ -25,7 +25,7 @@ exports.createTeamController = async (req, res) => {
 
         console.log("Requested Permissions:", permissions);
 
-        const validPermissions = await Permission.find({ name: { $in: permissions } });
+        const validPermissions = await Permission.find({ _id: { $in: permissions } });
         
         console.log("Found Permissions in DB:", validPermissions);
         console.log("Valid Permission Names:", validPermissions.map(p => p.name));
@@ -37,13 +37,13 @@ exports.createTeamController = async (req, res) => {
             });
         }
 
-        // Create new team
-        const newTeam = new Team({
+        
+        const newTeam =await new Team({
             name,
             permissions: validPermissions.map((perm) => perm._id),
-        });
+        }).save();
 
-        await newTeam.save();
+        
 
         res.status(201).json({
             success: true,
@@ -104,6 +104,42 @@ exports.updateTeamController = async (req, res) => {
 
 exports.deleteTeamController=async(req,res)=>{
     try {
+        const teamId = req.params.id
+        const team = teamModel.findByIdAndDelete(teamId)
+
+        if(!team){
+            return res.status(404).json({
+                success:false,
+                message:"Team Not Found"
+            })
+        }
+        res.status(200).json({
+            success:true,
+            message:"Team Deleted Successfully"
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({
+            success:false,
+            message:"Internal Server Error"
+        })
+    }
+}
+
+//get all teams
+
+exports.getAllTeamsController = async(req,res)=>{
+    try {
+        const teams = await teamModel.find().populate({
+            path:"permissions",
+            model:"Permission"
+        })
+        
+        res.status(200).json({
+            success:true,
+            message:"Teams Fetched Successfully",
+            teams
+        })
         
     } catch (error) {
         console.log(error)

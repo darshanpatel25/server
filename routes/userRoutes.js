@@ -5,7 +5,10 @@ const { requireSignIn, isAdmin, checkPermission } = require("../middlewares/auth
 const router = express.Router()
 
 //POST || Register User
-router.post("/register", registerUserController);
+router.post("/register",registerUserController);
+
+//POST || Create user
+router.post("/create",checkPermission("create_user"),registerUserController)
 
 //POST || Login User
 router.post("/login",loginUserController)
@@ -20,11 +23,11 @@ router.get("/user-test", requireSignIn, userController);
 
 //PUT || update user
 
-router.put("/update-user/:id",requireSignIn,checkPermission("create_user"),updateUserController)
+router.put("/update-user/:id",checkPermission("update_user"),updateUserController)
 
 //DELETE || Delete User
 
-router.delete("/delete-user/:id",requireSignIn,isAdmin,deleteUserController)
+router.delete("/delete-user/:id",checkPermission("delete_user"),deleteUserController)
 
 // POST || Assign team to user
 
@@ -32,7 +35,7 @@ router.post("/assign-team",assignTeamToUserController)
 
 //GET || Get All Users
 
-router.get("/getusers",getAllUsersController)
+router.get("/getusers",checkPermission("read_user"),getAllUsersController)
 
 
 module.exports = router
