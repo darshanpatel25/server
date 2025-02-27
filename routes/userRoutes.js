@@ -1,5 +1,5 @@
 const express = require("express");
-const { registerUserController, loginUserController, testController, userController, updateUserController, deleteUserController, assignTeamToUserController, getAllUsersController } = require("../controllers/userController");
+const { registerUserController, loginUserController, testController, userController, updateUserController, deleteUserController, assignTeamToUserController, getAllUsersController, getUserDetailsController } = require("../controllers/userController");
 const { requireSignIn, isAdmin, checkPermission } = require("../middlewares/authMiddleware");
 
 const router = express.Router()
@@ -31,11 +31,14 @@ router.delete("/delete-user/:id",checkPermission("delete_user"),deleteUserContro
 
 // POST || Assign team to user
 
-router.post("/assign-team",assignTeamToUserController)
+router.post("/assign-team",checkPermission("update_user"),assignTeamToUserController)
 
 //GET || Get All Users
 
 router.get("/getusers",checkPermission("read_user"),getAllUsersController)
+
+//GET || Single user permission info
+router.get("/me",requireSignIn,getUserDetailsController)
 
 
 module.exports = router

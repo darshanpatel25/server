@@ -105,7 +105,7 @@ exports.updateTeamController = async (req, res) => {
 exports.deleteTeamController=async(req,res)=>{
     try {
         const teamId = req.params.id
-        const team = teamModel.findByIdAndDelete(teamId)
+        const team =await teamModel.findByIdAndDelete(teamId)
 
         if(!team){
             return res.status(404).json({

@@ -10,15 +10,15 @@ router.post("/create",checkPermission("create_team"),createTeamController)
 
 //PUT || Team Update
 
-router.put('/update/:id',updateTeamController)
+router.put('/update/:id',checkPermission("update_team"),updateTeamController)
 
 //DELETE || Delete Team
 
-router.delete('/delete/:id',deleteTeamController)
+router.delete('/delete/:id',checkPermission("delete_team"),deleteTeamController)
 
 //GET || get all teams
 
-router.get('/getteams',getAllTeamsController)
+router.get('/getteams',checkPermission("read_team"),getAllTeamsController)
 
 
 

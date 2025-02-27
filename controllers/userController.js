@@ -23,7 +23,7 @@ exports.registerUserController = async (req, res) => {
             message:"Enter Valid Email"
           })
         }
-        if(password.length!=8){
+        if(password.length<8){
           return res.status(200).json({
             success:false,
             message:"Password should be greater than 8 characters"
@@ -102,7 +102,7 @@ exports.loginUserController = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "User Login Successful",
-      user: { _id: existingUser._id, name: existingUser.name, access: existingUser.access }, 
+      user:existingUser, 
       token,
     });
   } catch (error) {
@@ -261,3 +261,41 @@ exports.getAllUsersController = async(req,res)=>{
   }
 }
 
+// get user details
+
+
+exports.getUserDetailsController = async (req, res) => {
+  try {
+    const user = await userModel.findById(req.headers.id)
+      .populate({
+        path: "teams",
+        populate: { path: "permissions", model: "Permission" },
+      })
+      .select("name email teams");
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Extract all permissions from teams
+    const userPermissions = new Set();
+    user.teams.forEach((team) => {
+      team.permissions.forEach((permission) => {
+        userPermissions.add(permission.name);
+      });
+    });
+
+    res.status(200).json({
+      success: true,
+      user: {
+        name: user.name,
+        email: user.email,
+        teams: user.teams.map((team) => team.name),
+        permissions: Array.from(userPermissions),
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching user details:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};

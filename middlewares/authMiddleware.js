@@ -41,7 +41,7 @@ exports.checkPermission = (requiredPermission) => {
   return async (req, res, next) => {
     try {
       const userId = req.headers.id;
-      console.log(userId)
+      
 
       const user = await userModel.findById(userId).populate({
         path: 'teams',
@@ -66,13 +66,13 @@ exports.checkPermission = (requiredPermission) => {
             userPermissions.add(permission.name);
           });
         });
-        console.log(userPermissions)
+      
 
         // block if not permited
         if (!userPermissions.has(requiredPermission)) {
           return res.status(403).json({ success: false, message: 'Access denied' });
         }
-
+        console.log("middleware passed")
         next(); // access allowed
       }
 
