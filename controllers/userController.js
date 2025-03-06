@@ -4,17 +4,23 @@ const sendOTPEmail = require('../utils/otpMail')
 const { hashPassword, comparePassword } = require('../helpers/authHelper')
 const JWT = require('jsonwebtoken')
 const Team = require("../models/teamModel");
+const roleModal = require('../models/roleModal')
 
 // register
 
 exports.registerUserController = async (req, res) => {
     try {
-        //otp
-        // const otp = Math.floor(1000 + Math.random() * 9000)
-
-        // console.log(req)
-        //data from body
+      
         const { name, password, email } = req.body
+
+        
+
+        if(!name || !email || !password || name=="" || password=="" || email==""){
+          return res.status(200).json({
+            success:false,
+            message:"All Fields are required"
+          })
+        }
 
         let emailFormat = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
         if(email==='' || !email.match(emailFormat)){
@@ -37,7 +43,7 @@ exports.registerUserController = async (req, res) => {
         const HasedPassword = await hashPassword(password)
         if (exUser) {
 
-            return res.status(409).json({
+            return res.status(200).json({
                 success: false,
                 message: "User Already Exists"
             })
@@ -133,13 +139,26 @@ exports.updateUserController = async(req,res)=>{
   try {
 
     const { name, password, } = req.body;
-    const user = userModel.findById(req.user._id);
-    console.log(req.user._id);
+    const user =await userModel.findById(req.params.id);
+
+    if(name.trim()==""){
+      return res.status(200).json({
+        success:false,
+        message:"Name Can't Be Empty"
+      })
+    }
+    if(password.length<8){
+      return res.status(200).json({
+        success:false,
+        message:"Password must be greater than 8 characters"
+      })
+    }
+    
 
     const hashedPassword = password ? await hashPassword(password) : undefined;
 
     const updatedUser = await userModel.findByIdAndUpdate(
-      req.user._id,
+      req.params.id,
       {
         name: name || user.name,
         password: hashedPassword || user.password,
@@ -240,26 +259,58 @@ exports.assignTeamToUserController = async (req, res) => {
 
 //get all users
 
-exports.getAllUsersController = async(req,res)=>{
+exports.getAllUsersController = async (req, res) => {
   try {
-    const users =await userModel.find().populate({
-      path: 'teams',
-       model:'Team'
-    })
-    // const users = await userModel.find()
+    const users = await userModel.find()
+      .populate({
+        path: "teams",
+        populate: { path: "permissions", model: "Permission" },
+      })
+      .populate({
+        path: "roles",
+        populate: { path: "permissions", model: "Permission" },
+      })
+      .select("name email teams roles");
+
+    const formattedUsers = users.map(user => {
     
+      const userPermissions = new Set();
+
+      user.teams.forEach((team) => {
+        team.permissions.forEach((permission) => {
+          userPermissions.add(permission.name);
+        });
+      });
+
+      user.roles.forEach((role) => {
+        role.permissions.forEach((permission) => {
+          userPermissions.add(permission.name);
+        });
+      });
+
+      return {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        teams: user.teams.map((team) => team.name),
+        roles: user.roles.map((role) => role.name),
+        permissions: Array.from(userPermissions),
+      };
+    });
+
     res.status(200).json({
-      success:true,
-      users
-    })
+      success: true,
+      users: formattedUsers,
+    });
+
   } catch (error) {
-    console.log(error)
+    console.error("Error fetching all users:", error);
     res.status(500).json({
-      success:false,
-      message:"Internal Server Error"
-    })
+      success: false,
+      message: "Internal Server Error",
+    });
   }
-}
+};
 
 // get user details
 
@@ -271,16 +322,27 @@ exports.getUserDetailsController = async (req, res) => {
         path: "teams",
         populate: { path: "permissions", model: "Permission" },
       })
-      .select("name email teams");
+      .populate({
+        path: "roles",
+        populate: { path: "permissions", model: "Permission" },
+      })
+      .select("name email teams roles");
 
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    // Extract all permissions from teams
+    
     const userPermissions = new Set();
+
     user.teams.forEach((team) => {
       team.permissions.forEach((permission) => {
+        userPermissions.add(permission.name);
+      });
+    });
+
+    user.roles.forEach((role) => {
+      role.permissions.forEach((permission) => {
         userPermissions.add(permission.name);
       });
     });
@@ -291,6 +353,7 @@ exports.getUserDetailsController = async (req, res) => {
         name: user.name,
         email: user.email,
         teams: user.teams.map((team) => team.name),
+        roles: user.roles.map((role) => role.name),
         permissions: Array.from(userPermissions),
       },
     });
@@ -299,3 +362,54 @@ exports.getUserDetailsController = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+
+// assign custom role to user
+
+
+exports.assignRoleToUserController = async (req, res) => {
+  try {
+    const { userId, roleId } = req.body;
+
+    // Validate user and role existence
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const role = await roleModal.findById(roleId);
+    if (!role) {
+      return res.status(404).json({
+        success: false,
+        message: "Role not found",
+      });
+    }
+
+    // Check if user already has the role
+    if (user.roles.includes(roleId)) {
+      return res.status(400).json({
+        success: false,
+        message: "User is already assigned to this role",
+      });
+    }
+
+    // Assign role to user
+    user.roles.push(roleId);
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Role assigned to user successfully",
+      user,
+    });
+  } catch (error) {
+    console.error("Error assigning role to user:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+

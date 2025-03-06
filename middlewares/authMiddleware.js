@@ -35,50 +35,64 @@ exports.isAdmin = async (req, res, next) => {
   }
 };
 
-//check permissions if admin the directly bypass and if simple user  
+
 
 exports.checkPermission = (requiredPermission) => {
   return async (req, res, next) => {
     try {
       const userId = req.headers.id;
-      
 
-      const user = await userModel.findById(userId).populate({
-        path: 'teams',
-        populate: {
-          path: 'permissions',
-          model: 'Permission'
-        }
-      });
+      const user = await userModel.findById(userId)
+        .populate({
+          path: "teams",
+          populate: {
+            path: "permissions",
+            model: "Permission",
+          },
+        })
+        .populate({
+          path: "roles", 
+          populate: {
+            path: "permissions",
+            model: "Permission",
+          },
+        });
 
       if (!user) {
-        return res.status(404).json({ success: false, message: 'User not found' });
+        return res.status(404).json({ success: false, message: "User not found" });
       }
 
       if (user.access === 1) {
-        next()
+        return next(); 
       }
-      else {
 
-        const userPermissions = new Set();
-        user.teams.forEach(team => {
-          team.permissions.forEach(permission => {
-            userPermissions.add(permission.name);
-          });
-        });
+      const userPermissions = new Set();
+
       
+      user.teams.forEach((team) => {
+        team.permissions.forEach((permission) => {
+          userPermissions.add(permission.name);
+        });
+      });
 
-        // block if not permited
-        if (!userPermissions.has(requiredPermission)) {
-          return res.status(403).json({ success: false, message: 'Access denied' });
-        }
-        console.log("middleware passed")
-        next(); // access allowed
+    
+      user.roles.forEach((role) => {
+        role.permissions.forEach((permission) => {
+          userPermissions.add(permission.name);
+        });
+      });
+
+    
+      if (!userPermissions.has(requiredPermission)) {
+        return res.status(403).json({ success: false, message: "Access denied" });
       }
 
+      console.log("middleware passed");
+      next(); 
 
     } catch (error) {
-      res.status(500).json({ success: false, message: 'Internal server error in middleware' });
+      console.error("Middleware error:", error);
+      res.status(500).json({ success: false, message: "Internal server error in middleware" });
     }
   };
 };

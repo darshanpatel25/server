@@ -24,13 +24,18 @@ const userSchmea = new mongoose.Schema({
             ref: "Team"
         }
     ],
-   
-   
-    isVerified:{
-        type:Boolean,
-        required:true,
-        default:true
-    }
+
+
+    isVerified: {
+        type: Boolean,
+        required: true,
+        default: true
+    },
+    
+    roles: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Role"
+    }]
 })
 
-module.exports = mongoose.model("User",userSchmea)
+module.exports = mongoose.model("User", userSchmea)

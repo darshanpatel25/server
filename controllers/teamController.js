@@ -17,7 +17,7 @@ exports.createTeamController = async (req, res) => {
         
         const existingTeam = await Team.findOne({ name });
         if (existingTeam) {
-            return res.status(400).json({
+            return res.status(200).json({
                 success: false,
                 message: 'Team name already exists',
             });

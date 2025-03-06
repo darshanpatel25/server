@@ -4,10 +4,12 @@ const userRoutes = require("./routes/userRoutes")
 const teamRoutes = require("./routes/teamRoutes")
 const permissionRoutes = require("./routes/permissionRoutes")
 const contactRoutes = require("./routes/contactRoutes")
+const roleRoutes = require("./routes/roleRoutes")
 const dotenv = require("dotenv").config({ path: "./.env" });
 const app = express()
 const bodyParser = require('body-parser');
 const cors = require('cors');
+
 
 
 app.use(bodyParser.json());
@@ -37,6 +39,9 @@ app.use("/api/v1/permission",permissionRoutes)
 
 //contact route
 app.use("/api/v1/contact",contactRoutes)
+
+//role route
+app.use("/api/v1/role",roleRoutes)
 
 
 //listening server
